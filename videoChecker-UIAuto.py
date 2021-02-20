@@ -45,7 +45,7 @@ class AppDynamicsJob(unittest.TestCase):
 
 
         # driver.get("http://127.0.0.1:8080/")
-        driver.get(r"https://www.lofter.com/cms/13070/videoChecker.html")
+        driver.get(r"https://******/videoChecker.html")
         resetNum = initialNum
         id=initialId
         while(1):
