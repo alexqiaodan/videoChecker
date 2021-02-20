@@ -1,0 +1,183 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <style>
+    * { padding: 0; margin: 0;}
+    .box {
+      width: 600px;
+      margin: 10px auto;
+    }
+    .form-item {
+      margin: 8px 0;
+    }
+    .form-item label {
+      width: 80px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .form-item input {
+      width: 500px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    #video {
+      margin: 16px 0;
+      width: 600px;
+      height: 400px;
+      background: #000;
+    }
+    #message {
+      box-sizing: border-box;
+      margin: 16px 0;
+      width: 600px;
+      height: 200px;
+      padding: 8px;
+      border: 1px solid #000;
+      font-size: 14px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="form-item">
+      <label>视频地址</label>
+      <input id="video-url"/>
+    </div>
+    <div class="form-item">
+      <label>CrawlingID</label>
+      <input id="crawling-id"/>
+    </div>
+    <div class="form-item">
+      <label>PostID</label>
+      <input id="post-id"/>
+    </div>
+    <div class="form-item">
+      <button id="play-btn">播放</button>
+    </div>
+    <video
+      id="video"
+      autoplay
+    ></video>
+    <div id="message">
+    </div>
+  </div>
+  <script>
+    var videoEl = document.getElementById('video');
+    var videoUrlEl = document.getElementById('video-url');
+    var crawlingIdEl = document.getElementById('crawling-id');
+    var postIdEl = document.getElementById('post-id');
+    var messageEl = document.getElementById('message');
+    var playBtnEl = document.getElementById('play-btn');
+
+    var Video_Error_Codes = {
+      MEDIA_ERR_ABORTED: 1,
+      MEDIA_ERR_NETWORK: 2,
+      MEDIA_ERR_DECODE: 3,
+      MEDIA_ERR_SOURCE_INVALID: 4
+    };
+
+    var Video_Error_Messages = {
+      1: '网络错误',
+      2: '网络错误',
+      3: '视频解析错误',
+      4: '视频资源有误'
+    }
+
+
+    videoEl.addEventListener('canplay', function () {
+      message('可以播放',1);
+    }, true);
+
+    videoEl.addEventListener('error', function () {
+      var elementError = videoEl.error;
+      var errorMessage = '未知错误';
+      if (
+        elementError
+        && Video_Error_Messages[elementError.code]
+      ) {
+        errorMessage = Video_Error_Messages[elementError.code];
+      }
+      message(errorMessage,2);
+    }, true);
+
+    playBtnEl.addEventListener('click', function () {
+      playVideo();
+    }, true);
+
+    restFromQuery();
+    playVideo();
+
+    function restFromQuery () {
+      var search = window.location.search;
+      var query = {};
+      if (search) {
+        search = search.slice(1);
+        var searchArr = search.split('&');
+        for (var i = 0; i < searchArr.length; i ++) {
+          var queryArr = searchArr[i].split('=');
+          query[queryArr[0]] = decodeURIComponent(queryArr[1]);
+        }
+      }
+      if (query['videoUrl']) {
+        videoUrlEl.value = query['videoUrl'];
+      }
+      if (query['crawling-id']) {
+        crawlingIdEl.value = query['crawling-id'];
+      }
+      if (query['postId']) {
+        postIdEl.value = query['postId'];
+      }
+    }
+    function message (msg, code) {
+      var url = videoUrlEl.value;
+      var crawlingId = crawlingIdEl.value;
+      var postId = postIdEl.value;
+      var messageItem = document.createElement('div');
+      var time = new Date();
+      var resJson = {};
+
+      messageItem.innerHTML = time.toLocaleString() + '[' + crawlingId + ':' + postId + ':' + url + '] ' + msg + ';';
+      messageEl.appendChild(messageItem);
+      messageEl.scrollTop = messageEl.scrollHeight;
+      resJson["id"] = crawlingId;
+      resJson["url"] = url;
+      resJson["postId"] = postId;
+      resJson["msg"] = msg;
+      resJson["status"] = code;
+
+      writeData(crawlingId, JSON.stringify(resJson));
+      url = 'https://************/videoCheckScript/*****.do'
+      var res = postData(url,resJson)
+    }
+    function playVideo () {
+      if (videoUrlEl.value) {
+        videoEl.src = videoUrlEl.value;
+      }
+    }
+
+    function postData(url, data) {
+      return fetch(url, {
+        body: "postId=" + data['postId'] +
+            "&status=" + data['status'] , // must match 'Content-Type' header
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'include', // include, same-origin, *omit
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'no-cors', // no-cors, cors, *same-origin
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // *client, no-referrer
+      })
+      .then(response => response.json()) // parses response to JSON
+    }
+
+    function writeData(id, data){
+        localStorage.setItem(id, data)
+    }
+
+  </script>
+</body>
+</html>
