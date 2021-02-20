@@ -25,18 +25,18 @@ class AppDynamicsJob(unittest.TestCase):
         initialNum = 50
         initialId  = 80000
         driver = self.driver
-        driver.get("https://www.lofter.com/front/login")
+        driver.get("https://***/front/login")
         driver.find_element_by_link_text(u"邮箱").click()
         iframe = driver.find_element_by_tag_name('iframe')
         self.driver.switch_to.frame(iframe)
 
         driver.find_element_by_name("email").click()
         driver.find_element_by_name("email").clear()
-        driver.find_element_by_name("email").send_keys("ad_lofter0010@163.com")
+        driver.find_element_by_name("email").send_keys("***")
         time.sleep(1)
         driver.find_element_by_name("password").click()
         driver.find_element_by_name("password").clear()
-        driver.find_element_by_name("password").send_keys("Qa!0010")
+        driver.find_element_by_name("password").send_keys("***")
         time.sleep(0.9)
         driver.find_element_by_xpath("//span/input").click()
         time.sleep(1)
